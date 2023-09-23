@@ -2,13 +2,14 @@ clear
 clc
 
 % Configuracao
-hidden_layers = 1;
-r = 15;
-activation_func1 = 'tansig';
-p = 0;
-activation_func2 = 'tansig';
-train_function = 'trainlm';
+hidden_layers = 2;
+r = 25;
+activation_func1 = 'poslin';
+p = 25;
+activation_func2 = 'poslin';
+train_function = 'trainbr';
 epochs = 1000;
+config_name = "config6";
 
 % Importar dados
 petr = readtable('./dados/PETR3.SA.csv');
@@ -32,10 +33,10 @@ for i = 1:numRows
     outputs_vale(i, :) = vale.AdjClose(i+lookback:i+2*lookback-1);
 end
 
-train_inputs = inputs(1:1320, :);
-train_outputs_petr = outputs_petr(1:1320, :);
-train_outputs_embr = outputs_embr(1:1320, :);
-train_outputs_vale = outputs_vale(1:1320, :);
+train_inputs = inputs(1:1300, :);
+train_outputs_petr = outputs_petr(1:1300, :);
+train_outputs_embr = outputs_embr(1:1300, :);
+train_outputs_vale = outputs_vale(1:1300, :);
 
 % Treinando a rede para vale
 [net_petr, tr_petr] = train_nn(epochs, hidden_layers, r, p, train_inputs, train_outputs_petr, activation_func1, activation_func2, train_function);
@@ -46,14 +47,47 @@ train_outputs_vale = outputs_vale(1:1320, :);
 simulated_petr = sim(net_petr, inputs');
 simulated_embr = sim(net_embr, inputs');
 simulated_vale = sim(net_vale, inputs');
+
+figure;
 hold on
-plot(outputs_petr(:, 1), '+r');
-plot(simulated_petr(1, :)', 'b');
-% plot(outputs_embr(:, 1), '+r');
-% plot(simulated_embr(1, :)', 'b');
-% plot(outputs_vale(:, 1), '+r');
-% plot(simulated_vale(1, :)', 'b');
+plot(petr.Date(21:end), outputs_petr(:, 1), 'r');
+plot(petr.Date(21:end), simulated_petr(1, :)', 'b');
 grid
-xlabel('Tempo (dia)');
-ylabel('Valor (R$)');
-title('Açoes em funçao do tempo');
+xlabel('Tempo (dia)', 'FontSize', 14, 'Interpreter', 'latex');
+ylabel('Valor (R\$)', 'FontSize', 14, 'Interpreter', 'latex');
+title('A\c{c}\~{a}o da Petrobras em fun\c{c}\~{a}o do tempo', 'FontSize', 14, 'Interpreter', 'latex');
+legend({'Real', 'Previs\~{a}o', }, 'Location', 'northwest', 'FontSize', 14, 'interpreter', 'latex');
+set(gca, 'FontSize', 14);
+set(gca, 'TickLabelInterpreter', 'latex');
+filename_petr = sprintf('petr_%s.eps', config_name);
+print('-depsc2', filename_petr);
+hold off
+
+figure;
+hold on
+plot(embr.Date(21:end), outputs_embr(:, 1), 'r');
+plot(embr.Date(21:end), simulated_embr(1, :)', 'b');
+grid
+xlabel('Tempo (dia)', 'FontSize', 14, 'Interpreter', 'latex');
+ylabel('Valor (R\$)', 'FontSize', 14, 'Interpreter', 'latex');
+title('A\c{c}\~{a}o da Embrear em fun\c{c}\~{a}o do tempo', 'FontSize', 14, 'Interpreter', 'latex');
+legend({'Real', 'Previs\~{a}o', }, 'Location', 'northwest', 'FontSize', 14, 'interpreter', 'latex');
+set(gca, 'FontSize', 14);
+set(gca, 'TickLabelInterpreter', 'latex');
+filename_embr = sprintf('embr_%s.eps', config_name);
+print('-depsc2', filename_embr);
+hold off
+
+figure;
+hold on
+plot(vale.Date(21:end), outputs_vale(:, 1), 'r');
+plot(vale.Date(21:end), simulated_vale(1, :)', 'b');
+grid
+xlabel('Tempo (dia)', 'FontSize', 14, 'Interpreter', 'latex');
+ylabel('Valor (R\$)', 'FontSize', 14, 'Interpreter', 'latex');
+title('A\c{c}\~{a}o da Vale em fun\c{c}\~{a}o do tempo','FontSize', 14, 'Interpreter', 'latex');
+legend({'Real', 'Previs\~{a}o', }, 'Location', 'northwest', 'FontSize', 14, 'interpreter', 'latex');
+set(gca, 'FontSize', 14);
+set(gca, 'TickLabelInterpreter', 'latex');
+filename_vale = sprintf('vale_%s.eps', config_name);
+print('-depsc2', filename_vale);
